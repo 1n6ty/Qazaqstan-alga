@@ -13,20 +13,20 @@ client.on('message', msg => {
         if(/-reg [0-9]{6} .*./.test(msg.content)){
             let arr = msg.content.match(/-reg ([0-9]{6}) (.*.)/);
             playersManager.addPlayer(msg.author.id, arr[1], arr[2]);
-            console.log(`Player ${arr[2]} with id - ${arr[1]} has been registred`);
+            //console.log(`Player ${arr[2]} with id - ${arr[1]} has been registred`);
             msg.reply(`${arr[2]} успешно зарегистрирован`).then(m => {
                 setTimeout(() => {m.delete()}, 3000);
             });
         } else if(/-unreg/.test(msg.content)){
             let nick = playersManager.removePlayer(msg.author.id);
-            console.log("Player has been unregistred");
+            //console.log("Player has been unregistred");
             msg.reply(`${nick} успешно удалён`).then(m => {
                 setTimeout(() => {m.delete()}, 3000);
             });
         } else if(/-nick .*./.test(msg.content)){
             let arr = msg.content.match(/-nick (.*.)/);
             playersManager.changeName(msg.author.id, arr[1]);
-            console.log(`Player changed nick to ${arr[1]}`);
+            //console.log(`Player changed nick to ${arr[1]}`);
             msg.reply(`Успешно изменён nickname на ${arr[1]}`).then(m => {
                 setTimeout(() => {m.delete()}, 3000);
             });
@@ -59,14 +59,9 @@ var joinChannel = "✨{₺01n2m∆k3!n3w!4∆nn3l}°",
 
 client.on("voiceStateUpdate", (oldState, newState) => {
     properGuilds.forEach(v => {
-        if(oldState.channel !== null){
-            if(oldState.channel.name == v.channelName && oldState.channel.members.size == 0){
-                oldState.channel.delete();
-            }
-        } 
         if(newState.channel !== null){
             if(v.id == newState.channel.parentID && newState.channel.name == joinChannel){
-                console.log("creating channel");
+                //console.log("creating channel");
                 newState.channel.guild.channels.create(v.channelName, {reason: v.reason, type: "voice", userLimit: v.userLimit}).then(el => {
                     el.setParent(v.id).then(element => {
                         newState.setChannel(element);
@@ -74,6 +69,11 @@ client.on("voiceStateUpdate", (oldState, newState) => {
                 });
             }
         }
+        if(oldState.channel !== null){
+            if(oldState.channel.name == v.channelName && oldState.channel.members.size == 0){
+                oldState.channel.delete();
+            }
+        } 
     });
 });
 
