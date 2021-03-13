@@ -58,16 +58,20 @@ module.exports.Sessionv2 = class{
             if(idList.filter(v => v == e.playerId).length == 1){
                 return e;
             }
-        }).filter(v => v !== undefined).sort((a, b) => (b.rate1 + b.rate2 + b.rate3) / 3 - (a.rate1 + a.rate2 + a.rate3) / 3);
+        });
+        players.sort((a, b) => (b.rate1 + b.rate2 + b.rate3) / 3 - (a.rate1 + a.rate2 + a.rate3) / 3);
         if(players.length != 0){
             players.forEach(elem => {
-                if(teamA.power >= teamB.power){
-                    teamB.team.push(elem.nickName);
-                    teamB.power += (elem.rate1 + elem.rate2 + elem.rate5) / 3;
-                } else{
-                    teamA.team.push(elem.nickName);
-                    teamA.power += (elem.rate1 + elem.rate2 + elem.rate5) / 3;
+                if(elem != undefined){
+                    if(teamA.power >= teamB.power){
+                        teamB.team.push(elem.nickName);
+                        teamB.power += (elem.rate1 + elem.rate2 + elem.rate5) / 3;
+                    } else{
+                        teamA.team.push(elem.nickName);
+                        teamA.power += (elem.rate1 + elem.rate2 + elem.rate5) / 3;
+                    }
                 }
+                
             });
         }
         return [teamA, teamB];
@@ -94,7 +98,7 @@ module.exports.Sessionv2 = class{
             }
             return e;
         });
-        this.file.Players = this.file.Players.sort((a, b) => (b.rate1 + b.rate2 + b.rate3) / 3 - (a.rate1 + a.rate2 + a.rate3) / 3);
+        this.file.Players.sort((a, b) => (b.rate1 + b.rate2 + b.rate3) / 3 - (a.rate1 + a.rate2 + a.rate3) / 3);
         fs.writeFileSync(this.path, JSON.stringify(this.file));
     }
 
