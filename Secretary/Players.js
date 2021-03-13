@@ -27,7 +27,7 @@ module.exports.Players = class{
     }
 
     addPlayer(playerId, fastCupId, nickName){ // Call method to save to JSON
-        if([...this.file.Players.filter(v => v.playerId == playerId || v.fastCupId == fastCupId)].length == 0){
+        if(this.file.Players.filter(v => v.playerId == playerId || v.fastCupId == fastCupId).length == 0){
             this._savePlayer(playerId, fastCupId, 1, 1, 1, this.file.Players.length, nickName);
             return 1;
         }else {
@@ -55,7 +55,7 @@ module.exports.Players = class{
             } else{
                 nick = e.nickName;
             }
-        });
+        }).filter(el => el !== undefined);
         fs.writeFileSync(this.path, JSON.stringify(this.file));
         return nick;
     }
