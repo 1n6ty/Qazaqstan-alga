@@ -58,7 +58,7 @@ module.exports.Sessionv2 = class{
             if(idList.filter(v => v == e.playerId).length == 1){
                 return e;
             }
-        }).sort((a, b) => (b.rate1 + b.rate2 + b.rate3) / 3 - (a.rate1 + a.rate2 + a.rate3) / 3);
+        }).filter(v => v !== undefined).sort((a, b) => (b.rate1 + b.rate2 + b.rate3) / 3 - (a.rate1 + a.rate2 + a.rate3) / 3);
         if(players.length != 0){
             players.forEach(elem => {
                 if(teamA.power >= teamB.power){
