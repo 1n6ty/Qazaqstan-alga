@@ -1,6 +1,6 @@
 const fs = require("fs");
 const {Builder, By, until} = require('selenium-webdriver');
-const { Options } = require("selenium-webdriver/firefox");
+const { Options } = require("selenium-webdriver/chrome");
 
 module.exports.Sessionv2 = class{
 
@@ -160,7 +160,7 @@ module.exports.Sessionv2 = class{
 
     async main(){
         let teams = [];
-        this.driver = await new Builder().forBrowser('firefox').setFirefoxOptions(new Options().headless()).build(); // Selenium driver "Close after the rating function"
+        this.driver = await new Builder().forBrowser('chrome').setChromeOptions(new Options().headless()).build(); // Selenium driver "Close after the rating function"
         await this.driver.get(this.fastCupPath);
         await this.driver.wait(until.elementLocated(By.className(this.rateTemp.circle)));
         this.playersCount = (await this.driver.findElements(By.className(this.rateTemp.circle))).length;
