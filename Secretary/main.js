@@ -2,35 +2,33 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const {Players} = require("./Players");
 
-var playersManager = new Players("../data.json");
+var playersManager = new Players("../data.json"),
+    tableContext;
 
 client.on('ready', _ => {
     console.log("Client is ready");
+    client.channels.fetch("821765248666697808").then(channel => {
+        channel.send('Table of Players').then(m => {
+            tableContext = m;
+        });
+    });
 });
 
 client.on('message', msg => {
-    if(msg.channel.id == "772692657620123658" && msg.author.id != "815215856237543434"){
-        if(/-reg [0-9]{6} .*./.test(msg.content)){
-            let arr = msg.content.match(/-reg ([0-9]{6}) (.*.)/);
-            playersManager.addPlayer(msg.author.id, arr[1], arr[2]);
-            //console.log(`Player ${arr[2]} with id - ${arr[1]} has been registred`);
-            msg.reply(`${arr[2]} успешно зарегистрирован`).then(m => {
-                setTimeout(() => {m.delete()}, 3000);
-            });
+    if(msg.channel.id == "821765248666697808" && msg.author.id != "815215856237543434"){
+        if(/-reg/.test(msg.content)){
+            playersManager.addPlayer(msg.author.id, msg.author.username);
+            console.log(`Player ${msg.author.username} with id - ${msg.author.id} has been registred`);
         } else if(/-unreg/.test(msg.content)){
-            let nick = playersManager.removePlayer(msg.author.id);
-            //console.log("Player has been unregistred");
-            msg.reply(`${nick} успешно удалён`).then(m => {
-                setTimeout(() => {m.delete()}, 3000);
-            });
-        } else if(/-nick .*./.test(msg.content)){
-            let arr = msg.content.match(/-nick (.*.)/);
-            playersManager.changeName(msg.author.id, arr[1]);
-            //console.log(`Player changed nick to ${arr[1]}`);
-            msg.reply(`Успешно изменён nickname на ${arr[1]}`).then(m => {
-                setTimeout(() => {m.delete()}, 3000);
-            });
+            playersManager.removePlayer(msg.author.id);
+            console.log(`Player ${msg.author.username} has been unregistred`);
+        } else if(/-csgo *([0-9]{6})/.test(msg.content)){
+            let arr = /-csgo *(\d{6})/.exec(msg.content);
+            playersManager.csgoReg(msg.author.id, arr[1]);
+        } else if(/-uncsgo/.test(msg.content)){
+            playersManager.csgoUnreg(msg.author.id);
         }
+        playersManager.setTable(tableContext);
         msg.delete();
     }
 });

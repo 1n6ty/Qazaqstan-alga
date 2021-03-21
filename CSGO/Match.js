@@ -27,9 +27,24 @@ module.exports.Sessionv2 = class{
         this.comment = comment; //Comment for game;)
     }
 
-    getEstTime(){return this.estTime;}
-    getMsgId(){return this.msgRegContext.id;}
-    getHref(){return this.fastCupPath;}
+    getMsgId(){
+        return this.msgRegContext.id;
+    }
+
+    getEstTime(){
+        return this.estTime;
+    }
+
+    remove(playerId){
+        this.players = this.players.filter(v => v != playerId);
+        console.log(`user has been removed ${this.players}`);
+    }
+
+    add(playerId){
+        if(this.file.Players.filter(v => v.playerId == playerId)[0].csgo !== undefined) this.players.push(playerId);
+        console.log(`user has been added ${this.players}`);
+    }
+
     isHere(playerId){
         if(this.players.filter(el => el == playerId).length == 0){
             return false;
@@ -38,87 +53,45 @@ module.exports.Sessionv2 = class{
         }
     }
 
-    remove(playerId){
-        this.players = this.players.map(v => {
-            if(v != playerId){
-                return v;
-            }
-        });
-        console.log(`user has been removed ${this.players}`);
-    }
-
-    add(playerId){this.players.push(playerId);console.log(`user has been added ${this.players}`)}
-
     determinateTeams(idList){
         this.file = JSON.parse(fs.readFileSync(this.path));
         let teamA = {power: 0, team: []}, teamB = {power: 0, team: []};
-        idList = idList.filter(v => v != undefined);
-        let players = this.file.Players.map(e => {
-            console.log(e.playerId, idList.filter(v => v == e.playerId).length, idList);
-            if(idList.filter(v => v == e.playerId).length == 1){
-                return e;
-            }
-        });
-        players.sort((a, b) => (b.rate1 + b.rate2 + b.rate3) / 3 - (a.rate1 + a.rate2 + a.rate3) / 3);
-        if(players.length != 0){
-            players.forEach(elem => {
-                if(elem != undefined){
-                    if(teamA.power >= teamB.power){
-                        teamB.team.push(elem.nickName);
-                        teamB.power += (elem.rate1 + elem.rate2 + elem.rate5) / 3;
-                    } else{
-                        teamA.team.push(elem.nickName);
-                        teamA.power += (elem.rate1 + elem.rate2 + elem.rate5) / 3;
-                    }
+        this.players = this.file.Players.filter(v => idList.indexOf(v.playerId) != -1).sort((a, b) => (b.csgo.rate1 + b.csgo.rate2 + b.csgo.rate3) / 3 - (a.csgo.rate1 + a.csgo.rate2 + a.csgo.rate3) / 3);
+        if(this.players.length != 0){
+            this.players.forEach(elem => {
+                if(teamA.power >= teamB.power){
+                    teamB.team.push(elem.nick);
+                    teamB.power += (elem.csgo.rate1 + elem.csgo.rate2 + elem.csgo.rate5) / 3;
+                } else{
+                    teamA.team.push(elem.nick);
+                    teamA.power += (elem.csgo.rate1 + elem.csgo.rate2 + elem.csgo.rate5) / 3;
                 }
-                
             });
         }
         return [teamA, teamB];
     }
 
-    realId(fastCupId){
-        this.file = JSON.parse(fs.readFileSync(this.path));
-        console.log(this.file.Players.filter(v => v.fastCupId == fastCupId)[0]);
-        let player = this.file.Players.filter(v => v.fastCupId == fastCupId)[0];
-        return (player != undefined) ? player.playerId: undefined;
-    }
-
-    updatePlayer(playerId, mode, rate){ // Update rating of player
+    updatePlayer(fastCupId, mode, rate){ // Update rating of player
         this.file = JSON.parse(fs.readFileSync(this.path));
         this.file.Players = this.file.Players.map(e => {
-            if(e.playerId == playerId){
+            if(e.csgo !== undefined && e.csgo.fastCupId == fastCupId){
                 if(mode == 1){
-                    e.rate1 = Math.floor((e.rate1 + rate) * 50) / 100;
+                    e.csgo.rate1 = Math.floor((e.csgo.rate1 + rate) * 50) / 100;
                 } else if(mode == 2){
-                    e.rate2 = Math.floor((e.rate2 + rate) * 50) / 100;
+                    e.csgo.rate2 = Math.floor((e.csgo.rate2 + rate) * 50) / 100;
                 } else{
-                    e.rate5 = Math.floor((e.rate5 + rate) * 50) / 100;
+                    e.csgo.rate5 = Math.floor((e.csgo.rate5 + rate) * 50) / 100;
                 }
             }
             return e;
         });
-        this.file.Players.sort((a, b) => (b.rate1 + b.rate2 + b.rate3) / 3 - (a.rate1 + a.rate2 + a.rate3) / 3);
+        this.file.Players.sort((a, b) => (b.csgo.rate1 + b.csgo.rate2 + b.csgo.rate3) / 3 - (a.csgo.rate1 + a.csgo.rate2 + a.csgo.rate3) / 3);
         fs.writeFileSync(this.path, JSON.stringify(this.file));
     }
 
     async updateRate(){
-        let flag = true,
-            roundCount = 0;
+        let roundCount = 0;
 
-        await this.driver.get(this.fastCupPath);
-        await this.driver.wait(until.elementsLocated(By.className('_33aUm')), 2000);
-
-        while(flag){
-            try{
-                if((await (await this.driver.findElement(By.className('_33aUm'))).getText()).includes("Didn't start") || (await (await this.driver.findElement(By.className('_33aUm'))).getText()).includes("Не состоялся")){
-                    this.msgRegContext.delete();
-                    return -1; 
-                }
-                await this.driver.wait(until.elementLocated(By.className('_2QNqw')), 1000);
-                flag = false;
-            } catch(e){}
-        }
         for(let item of await this.driver.findElements(By.className(this.rateTemp.rounds))){
             roundCount += parseInt(await item.getText());
         }
@@ -148,22 +121,24 @@ module.exports.Sessionv2 = class{
                             return sum += cur * (7 - ind) * (7 - ind);
                         }) / roundCount) / 2.7) * 100) / 100; // Rate calculating
             console.log(rate, " - rate ", href);
-            this.updatePlayer(this.realId(href), this.playersCount / 2, rate);
+            this.updatePlayer(href, this.playersCount / 2, rate);
         }
         await this.driver.quit();
         console.log('Match is over');
-        this.msgRegContext.delete();
         let table = `Place |      ID      | 5 vs 5 | 2 vs 2 | 1 vs 1 | Nickname\n`;
-        this.file.Players.forEach((e, i) => {
-            table += `---------------------------------------------------------------------------------\n${i + 1}        | ${e.fastCupId} | ${e.rate5}     | ${e.rate2}     | ${e.rate1}    | ${e.nickName} |\n`;
+        this.file.Players.sort((a, b) => (b.csgo.rate1 + b.csgo.rate2 + b.csgo.rate3) / 3 - (a.csgo.rate1 + a.csgo.rate2 + a.csgo.rate3) / 3);
+        this.file.Players.filter(v => v.csgo !== undefined).forEach((e, i) => {
+            table += `---------------------------------------------------------------------------------\n${i + 1}       | ${e.csgo.fastCupId} | ${e.csgo.rate5}     | ${e.csgo.rate2}     | ${e.csgo.rate1}    | ${e.nick}`;
         });
+        this.msgRegContext.delete();
         console.log(table);
         this.tableContext.edit(table);
         return 0;
     }
 
     async main(){
-        let teams = [];
+        let teams = [],
+        flag = true;
         this.driver = await new Builder().forBrowser('chrome').setChromeOptions(new Options().headless()).build(); // Selenium driver "Close after the rating function"
         await this.driver.get(this.fastCupPath);
         await this.driver.wait(until.elementLocated(By.className(this.rateTemp.circle)));
@@ -185,7 +160,20 @@ module.exports.Sessionv2 = class{
         } 
         await this.msgRegContext.reactions.removeAll();
         this.msgRegContext.edit(`Матч ${this.fastCupPath} начался:military_helmet::\n| Команда № 1:\n\`\`\`css\n[${teams[0].team.join(', ')}]\n\`\`\`\n| Команда № 2:\n\`\`\`css\n[${teams[1].team.join(', ')}]\n\`\`\`\nУдачной игры:smile:`);
+        
+        await this.driver.get(this.fastCupPath);
+        await this.driver.wait(until.elementsLocated(By.className('_33aUm')), 2000);
+        while(flag){
+            try{
+                if((await (await this.driver.findElement(By.className('_33aUm'))).getText()).includes("Didn't start") || (await (await this.driver.findElement(By.className('_33aUm'))).getText()).includes("Не состоялся")){
+                    this.msgRegContext.delete();
+                    return -1; 
+                }
+                await this.driver.wait(until.elementLocated(By.className('_2QNqw')), 1000);
+                flag = false;
+            } catch(e){}
+        }
+
         return await this.updateRate();
     }
-
 }

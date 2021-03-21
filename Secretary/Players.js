@@ -8,56 +8,66 @@ module.exports.Players = class{
         this.path = path;
     }
 
-    _savePlayer(playerId, fastCupId, rate5, rate2, rate1, place, nickname){ // Save new player to JSON
-        this.file.Players.push({
-            "playerId": playerId,
-            "fastCupId": fastCupId,
-            "place": place,
-            "nickName": nickname,
-            "rate5": rate5,
-            "rate2": rate2,
-            "rate1": rate1
-        });
-        fs.writeFileSync(this.path, JSON.stringify(this.file));
+    async setTable(tableContext){
+        let str = "nick | csgo\n";
+        for(let i of this.file.Players){
+            str += "------------------------------------------------------------------------------\n";
+            str += `${(await tableContext.client.users.fetch(i.playerId)).username} | ${(i.csgo !== undefined) ? '✅': '❎'}\n`; 
+        }
+        console.log(str);
+        await tableContext.edit(str);
     }
 
-    _placeUpdate(){ // Sorting players by middle of rate
-        this.file.Players = this.file.Players.sort((a, b) => (b.rate1 + b.rate2 + b.rate3) / 3 - (a.rate1 + a.rate2 + a.rate3) / 3);
-        fs.writeFileSync(this.path, JSON.stringify(this.file));
-    }
-
-    addPlayer(playerId, fastCupId, nickName){ // Call method to save to JSON
-        if(this.file.Players.filter(v => v.playerId == playerId || v.fastCupId == fastCupId).length == 0){
-            this._savePlayer(playerId, fastCupId, 1, 1, 1, this.file.Players.length, nickName);
+    addPlayer(playerId, nick){
+        if(this.file.Players.filter(v => v.playerId == playerId).length == 0){
+            this.file.Players.push({
+                "playerId": playerId,
+                "nick": nick
+            });
+            fs.writeFileSync(this.path, JSON.stringify(this.file));
             return 1;
         }else {
             return -1;
         }
     }
 
-    changeName(playerId, nickNameNew){ // Change players name
-        this.file.Players = this.file.Players.map(e => {
-            if(e.playerId == playerId){
-                e.nickName = nickNameNew;
-                return e;
-            } else{
-                return e;
+    csgoReg(playerId, fastCupId){
+        this.file.Players.forEach(element => {
+            if(element.playerId == playerId){
+                if(element.csgo === undefined){
+                    element["csgo"] = {
+                        "fastCupId": fastCupId,
+                        "rate1": 1,
+                        "rate2": 1,
+                        "rate5": 1,
+                        "place": "n"
+                    };
+                    fs.writeFileSync(this.path, JSON.stringify(this.file));
+                    return 0;
+                } else{
+                    return -1;
+                }
             }
         });
-        this._placeUpdate();
+    }
+
+    csgoUnreg(playerId){
+        this.file.Players = this.file.Players.map(e => {
+            if(e.playerId == playerId){
+                e.csgo = undefined;
+            }
+            return e;
+        });
+        fs.writeFileSync(this.path, JSON.stringify(this.file));
     }
 
     removePlayer(playerId){ // Removing player from JSON 
-        let nick = "";
         this.file.Players = this.file.Players.map(e => {
             if(e.playerId != playerId){
                 return e;
-            } else{
-                nick = e.nickName;
             }
         }).filter(el => el !== undefined);
         fs.writeFileSync(this.path, JSON.stringify(this.file));
-        return nick;
     }
 }
 
