@@ -6,6 +6,7 @@ var order = [];
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!, `, process.memoryUsage().heapUsed / 1024 / 1024, ' MB');
+    
 });
 
 client.on('message', msg => {
@@ -20,7 +21,7 @@ client.on('message', msg => {
                 client.channels.fetch('812291904653361162').then(channel => {
                     channel.send('CS:GO').then(m => {
                         client.channels.fetch('772692657620123658').then(cs => {
-                            cs.messages.fetch('817354569679634442').then(table => {
+                            cs.messages.fetch('826485650861719593').then(table => {
                                 m.react('✅');
                                 order.push(new Sessionv2('../data.json', estTime, href, m, table, comment));
                                 order[order.length - 1].main().then(v => {
