@@ -25,8 +25,12 @@ client.on('message', msg => {
         } else if(/-csgo *([0-9]{6})/.test(msg.content)){
             let arr = /-csgo *(\d{6})/.exec(msg.content);
             playersManager.csgoReg(msg.author.id, arr[1]);
+            let role = msg.member.guild.roles.cache.find(role => role.name === "cs:go");
+            if (role) msg.guild.members.cache.get(msg.author.id).roles.add(role);
         } else if(/-uncsgo/.test(msg.content)){
             playersManager.csgoUnreg(msg.author.id);
+            let role = msg.member.guild.roles.cache.find(role => role.name === "cs:go");
+            if (role) msg.guild.members.cache.get(msg.author.id).roles.remove(role);
         }
         playersManager.setTable(tableContext);
         msg.delete();
@@ -59,7 +63,6 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     properGuilds.forEach(v => {
         if(newState.channel !== null){
             if(v.id == newState.channel.parentID && newState.channel.name == joinChannel){
-                //console.log("creating channel");
                 newState.channel.guild.channels.create(v.channelName, {reason: v.reason, type: "voice", userLimit: v.userLimit}).then(el => {
                     el.setParent(v.id).then(element => {
                         newState.setChannel(element);
