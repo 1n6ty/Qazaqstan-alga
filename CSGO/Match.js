@@ -41,7 +41,8 @@ module.exports.Sessionv2 = class{
     }
 
     add(playerId){
-        if(this.file.Players.filter(v => v.playerId == playerId)[0].csgo !== undefined) this.players.push(playerId);
+        let player = this.file.Players.filter(v => v.playerId == playerId)[0];
+        if(player !== undefined && player.csgo !== undefined) this.players.push(playerId);
         console.log(`user has been added ${this.players}`);
     }
 
@@ -147,7 +148,7 @@ module.exports.Sessionv2 = class{
         this.timerId = setInterval(() => {
             this.estTime -= 1000;
             console.log('one sec has been reduced');
-            this.msgRegContext.edit(`| Открыта регистрация на матч ${this.playersCount / 2} на ${this.playersCount / 2} "${this.comment}":\nНажмите :white_check_mark: для добавления в матч (уберите, если передумали:wink:)\n\`\`\`css\n[Времени осталось: ${this.estTime / 1000} секунд]\n\`\`\``);
+            this.msgRegContext.edit(`| Открыта регистрация на матч ${this.playersCount / 2} на ${this.playersCount / 2} "${this.comment}":\nНажмите :white_check_mark: для добавления в матч (уберите, если передумали:wink:)\n\`\`\`css\n[Времени осталось: ${this.estTime / 1000} секунд]\n[Игроки: ${this.players.map(e => this.file.Players.filter(v => v.playerId == e)[0].nick).join(', ')}]\`\`\``);
         }, 1000);
         setTimeout(() => {
             clearInterval(this.timerId);
