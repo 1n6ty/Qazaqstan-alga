@@ -12,7 +12,7 @@ module.exports.Players = class{
         let str = "nick | csgo\n";
         for(let i of this.file.Players){
             str += "------------------------------------------------------------------------------\n";
-            str += `${(await tableContext.client.users.fetch(i.playerId)).username} | ${(i.csgo !== undefined) ? '✅': '❎'}\n`; 
+            str += `${(await tableContext.client.users.fetch(i.playerId)).username} | ${(i.csgo !== undefined) ? i.csgo.fastCupId: '❎'}\n`; 
         }
         console.log(str);
         await tableContext.edit(str);
