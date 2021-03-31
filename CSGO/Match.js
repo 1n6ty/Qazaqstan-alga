@@ -86,7 +86,7 @@ module.exports.Sessionv2 = class{
             }
             return e;
         });
-        this.file.Players.sort((a, b) => (b.csgo.rate1 + b.csgo.rate2 + b.csgo.rate3) / 3 - (a.csgo.rate1 + a.csgo.rate2 + a.csgo.rate3) / 3);
+        this.file.Players.sort((a, b) => (a.csgo !== undefined && b.csgo !== undefined) ? (b.csgo.rate1 + b.csgo.rate2 + b.csgo.rate3) / 3 - (a.csgo.rate1 + a.csgo.rate2 + a.csgo.rate3) / 3: 0);
         fs.writeFileSync(this.path, JSON.stringify(this.file));
     }
 
