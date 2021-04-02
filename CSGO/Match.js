@@ -27,6 +27,10 @@ module.exports.Sessionv2 = class{
         this.comment = comment; //Comment for game;)
     }
 
+    getHref(){
+        return this.fastCupPath;
+    }
+
     getMsgId(){
         return this.msgRegContext.id;
     }
