@@ -125,10 +125,9 @@ module.exports.Sessionv2 = class{
         }
         await this.driver.quit();
         console.log('Match is over');
-        let table = `Place |      ID      | 5 vs 5 | 2 vs 2 | 1 vs 1 | Nickname\n`;
-        this.file.Players.sort((a, b) => (a.csgo !== undefined && b.csgo !== undefined) ? (b.csgo.rate1 + b.csgo.rate2 + b.csgo.rate3) / 3 - (a.csgo.rate1 + a.csgo.rate2 + a.csgo.rate3) / 3: 0);
-        this.file.Players.filter(v => v.csgo !== undefined).forEach((e, i) => {
-            table += `---------------------------------------------------------------------------------\n${i + 1}       | ${e.csgo.fastCupId} | ${e.csgo.rate5}     | ${e.csgo.rate2}     | ${e.csgo.rate1}    | ${e.nick}`;
+        let table = `Place |      ID      | 5 vs 5 | 2 vs 2 | 1 vs 1 | Nickname`;
+        this.file.Players.filter(v => v.csgo !== undefined).sort((a, b) => (b.csgo.rate1 + b.csgo.rate2 + b.csgo.rate3) / 3 - (a.csgo.rate1 + a.csgo.rate2 + a.csgo.rate3) / 3).forEach((e, i) => {
+            table += `\n---------------------------------------------------------------------------------\n${i + 1}       | ${e.csgo.fastCupId} | ${e.csgo.rate5}     | ${e.csgo.rate2}     | ${e.csgo.rate1}    | ${e.nick}`;
         });
         this.msgRegContext.delete();
         console.log(table);
